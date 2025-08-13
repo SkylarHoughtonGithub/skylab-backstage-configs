@@ -1,0 +1,628 @@
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: skylab-0-eks-cluster
+  labels:
+    provider: aws
+    cluster-type: standard
+    environment: dev
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  compositeTypeRef:
+    apiVersion: infrastructure.skylab.com/v1alpha1
+    kind: XEKSCluster
+  
+  resources:
+    # VPC
+    - name: vpc
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: VPC
+        metadata:
+          name: skylab-0-vpc
+        spec:
+          forProvider:
+            region: us-east-2
+            cidrBlock: 192.168.0.0/16
+            enableDnsHostNames: true
+            enableDnsSupport: true
+            instanceTenancy: default
+            tags:
+              - key: Name
+                value: skylab-0-vpc
+              - key: Environment
+                value: dev
+              - key: ClusterType
+                value: standard
+              - key: ManagedBy
+                value: crossplane
+          providerConfigRef:
+            name: default
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-vpc"
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.environment
+          toFieldPath: spec.forProvider.tags[1].value
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterType
+          toFieldPath: spec.forProvider.tags[2].value
+
+    # Internet Gateway
+    - name: igw
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: InternetGateway
+        metadata:
+          name: skylab-0-igw
+        spec:
+          forProvider:
+            region: us-east-2
+            vpcIdRef:
+              name: skylab-0-vpc
+            tags:
+              - key: Name
+                value: skylab-0-igw
+              - key: Environment
+                value: dev
+              - key: ManagedBy
+                value: crossplane
+          providerConfigRef:
+            name: default
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-igw"
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: spec.forProvider.vpcIdRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-vpc"
+
+    # Subnet 1 (us-east-2a)
+    - name: subnet-2a
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: Subnet
+        metadata:
+          name: skylab-0-us-east-2a
+        spec:
+          forProvider:
+            region: us-east-2
+            availabilityZone: us-east-2a
+            cidrBlock: 192.168.10.0/24
+            vpcIdRef:
+              name: skylab-0-vpc
+            mapPublicIpOnLaunch: true
+            tags:
+              - key: Name
+                value: skylab-0-us-east-2a
+              - key: Environment
+                value: dev
+              - key: ManagedBy
+                value: crossplane
+          providerConfigRef:
+            name: default
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.availabilityZone
+          transforms:
+            - type: string
+              string:
+                fmt: "%sa"
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-us-east-2a"
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: spec.forProvider.vpcIdRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-vpc"
+
+    # Subnet 2 (us-east-2c)
+    - name: subnet-2c
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: Subnet
+        metadata:
+          name: skylab-0-us-east-2c
+        spec:
+          forProvider:
+            region: us-east-2
+            availabilityZone: us-east-2c
+            cidrBlock: 192.168.11.0/24
+            vpcIdRef:
+              name: skylab-0-vpc
+            mapPublicIpOnLaunch: true
+            tags:
+              - key: Name
+                value: skylab-0-us-east-2c
+              - key: Environment
+                value: dev
+              - key: ManagedBy
+                value: crossplane
+          providerConfigRef:
+            name: default
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.availabilityZone
+          transforms:
+            - type: string
+              string:
+                fmt: "%sc"
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-us-east-2c"
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: spec.forProvider.vpcIdRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-vpc"
+
+    # Route Table
+    - name: route-table
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: RouteTable
+        metadata:
+          name: skylab-0-public-rt
+        spec:
+          forProvider:
+            region: us-east-2
+            vpcIdRef:
+              name: skylab-0-vpc
+            associations:
+              - subnetIdRef:
+                  name: skylab-0-us-east-2a
+              - subnetIdRef:
+                  name: skylab-0-us-east-2c
+            routes:
+              - destinationCidrBlock: 0.0.0.0/0
+                gatewayIdRef:
+                  name: skylab-0-igw
+            tags:
+              - key: Name
+                value: skylab-0-public-rt
+              - key: Environment
+                value: dev
+              - key: ManagedBy
+                value: crossplane
+          providerConfigRef:
+            name: default
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-public-rt"
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: spec.forProvider.vpcIdRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-vpc"
+
+    # Security Group
+    - name: security-group
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: SecurityGroup
+        metadata:
+          name: skylab-0-sg
+        spec:
+          forProvider:
+            groupName: skylab-0-sg
+            region: us-east-2
+            vpcIdRef:
+              name: skylab-0-vpc
+            description: "EKS cluster security group"
+            ingress:
+              - fromPort: -1
+                ipProtocol: "-1"
+                ipRanges:
+                  - cidrIp: 68.52.182.6/32
+                toPort: -1
+            egress:
+              - fromPort: -1
+                ipProtocol: "-1"
+                ipRanges:
+                  - cidrIp: 0.0.0.0/0
+                toPort: -1
+            tags:
+              - key: Name
+                value: skylab-0-sg
+              - key: Environment
+                value: dev
+              - key: ManagedBy
+                value: crossplane
+          providerConfigRef:
+            name: default
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-sg"
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: spec.forProvider.groupName
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-sg"
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: spec.forProvider.vpcIdRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-vpc"
+
+    # EKS Cluster IAM Role
+    - name: cluster-role
+      base:
+        apiVersion: iam.aws.crossplane.io/v1beta1
+        kind: Role
+        metadata:
+          name: skylab-0-cluster-role
+        spec:
+          forProvider:
+            assumeRolePolicyDocument: |
+              {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": "eks.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                  }
+                ]
+              }
+            tags:
+              - key: Name
+                value: skylab-0-cluster-role
+              - key: Environment
+                value: dev
+              - key: ManagedBy
+                value: crossplane
+          providerConfigRef:
+            name: default
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-cluster-role"
+
+    # EKS Cluster IAM Role Policy Attachment
+    - name: cluster-policy
+      base:
+        apiVersion: iam.aws.crossplane.io/v1beta1
+        kind: RolePolicyAttachment
+        metadata:
+          name: skylab-0-cluster-policy
+        spec:
+          forProvider:
+            policyArn: arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+            roleNameRef:
+              name: skylab-0-cluster-role
+          providerConfigRef:
+            name: default
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-cluster-policy"
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: spec.forProvider.roleNameRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-cluster-role"
+
+    # Node Group IAM Role
+    - name: node-role
+      base:
+        apiVersion: iam.aws.crossplane.io/v1beta1
+        kind: Role
+        metadata:
+          name: skylab-0-node-role
+        spec:
+          forProvider:
+            assumeRolePolicyDocument: |
+              {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": "ec2.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                  }
+                ]
+              }
+            tags:
+              - key: Name
+                value: skylab-0-node-role
+              - key: Environment
+                value: dev
+              - key: ManagedBy
+                value: crossplane
+          providerConfigRef:
+            name: default
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-node-role"
+
+    # Node Group IAM Role Policy Attachments
+    - name: worker-node-policy
+      base:
+        apiVersion: iam.aws.crossplane.io/v1beta1
+        kind: RolePolicyAttachment
+        metadata:
+          name: skylab-0-worker-node-policy
+        spec:
+          forProvider:
+            policyArn: arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+            roleNameRef:
+              name: skylab-0-node-role
+          providerConfigRef:
+            name: default
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-worker-node-policy"
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: spec.forProvider.roleNameRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-node-role"
+
+    - name: cni-policy
+      base:
+        apiVersion: iam.aws.crossplane.io/v1beta1
+        kind: RolePolicyAttachment
+        metadata:
+          name: skylab-0-cni-policy
+        spec:
+          forProvider:
+            policyArn: arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+            roleNameRef:
+              name: skylab-0-node-role
+          providerConfigRef:
+            name: default
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-cni-policy"
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: spec.forProvider.roleNameRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-node-role"
+
+    - name: ecr-policy
+      base:
+        apiVersion: iam.aws.crossplane.io/v1beta1
+        kind: RolePolicyAttachment
+        metadata:
+          name: skylab-0-ecr-policy
+        spec:
+          forProvider:
+            policyArn: arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+            roleNameRef:
+              name: skylab-0-node-role
+          providerConfigRef:
+            name: default
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-ecr-policy"
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: spec.forProvider.roleNameRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-node-role"
+
+    # EKS Cluster
+    - name: eks-cluster
+      base:
+        apiVersion: eks.aws.crossplane.io/v1beta1
+        kind: Cluster
+        metadata:
+          name: skylab-0
+        spec:
+          forProvider:
+            region: us-east-2
+            version: "1.28"
+            roleArnRef:
+              name: skylab-0-cluster-role
+            resourcesVpcConfig:
+              endpointPrivateAccess: false
+              endpointPublicAccess: true
+              securityGroupIdRefs:
+                - name: skylab-0-sg
+              subnetIdRefs:
+                - name: skylab-0-us-east-2a
+                - name: skylab-0-us-east-2c
+            tags:
+              Name: skylab-0
+              Environment: dev
+              ClusterType: standard
+              ManagedBy: crossplane
+          providerConfigRef:
+            name: default
+          writeConnectionSecretToRef:
+            name: skylab-0-conn
+            namespace: crossplane-system
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.kubernetesVersion
+          toFieldPath: spec.forProvider.version
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: metadata.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.environment
+          toFieldPath: spec.forProvider.tags.Environment
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterType
+          toFieldPath: spec.forProvider.tags.ClusterType
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: spec.writeConnectionSecretToRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-conn"
+
+    # EKS Node Group
+    - name: nodegroup
+      base:
+        apiVersion: eks.aws.crossplane.io/v1alpha1
+        kind: NodeGroup
+        metadata:
+          name: skylab-0-nodegroup
+        spec:
+          forProvider:
+            region: us-east-2
+            clusterNameRef:
+              name: skylab-0
+            nodeRoleRef:
+              name: skylab-0-node-role
+            subnetRefs:
+              - name: skylab-0-us-east-2a
+              - name: skylab-0-us-east-2c
+            scalingConfig:
+              desiredSize: 1
+              maxSize: 1
+              minSize: 1
+            instanceTypes:
+              - t3.medium
+            tags:
+              Name: skylab-0-nodegroup
+              Environment: dev
+              ClusterType: standard
+              ManagedBy: crossplane
+          providerConfigRef:
+            name: default
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-nodegroup"
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: spec.forProvider.clusterNameRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterName
+          toFieldPath: spec.forProvider.nodeRoleRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-node-role"
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.nodeCount
+          toFieldPath: spec.forProvider.scalingConfig.desiredSize
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.nodeCount
+          toFieldPath: spec.forProvider.scalingConfig.maxSize
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.nodeSize
+          toFieldPath: spec.forProvider.instanceTypes[0]
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.environment
+          toFieldPath: spec.forProvider.tags.Environment
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.clusterType
+          toFieldPath: spec.forProvider.tags.ClusterType
