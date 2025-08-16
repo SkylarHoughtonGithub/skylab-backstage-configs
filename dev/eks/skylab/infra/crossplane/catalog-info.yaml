@@ -28,7 +28,7 @@ metadata:
     - url: https://console.aws.amazon.com/eks/home?region=us-east-2#/clusters/skylab
       title: AWS EKS Console
       icon: cloud
-    - url: https://argocd.skylarhoughtongithub.local/applications?search=skylab
+    - url: https://argocd.skylarhoughtongithub.local/applications?search=skylab-crossplane-infra-dev
       title: ArgoCD Applications
       icon: dashboard
     - url: https://github.com/SkylarHoughtonGithub/skylab-backstage-configs/tree/main/dev/eks/skylab/infra/crossplane
