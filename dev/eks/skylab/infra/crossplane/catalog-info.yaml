@@ -7,8 +7,8 @@ metadata:
   description: Standard EKS cluster for dev environment managed by Crossplane
   annotations:
     backstage.io/managed-by-location: url:https://github.com/SkylarHoughtonGithub/skylab-backstage-configs/blob/main/dev/eks/skylab/infra/crossplane/catalog-info.yaml
-    backstage.io/techdocs-ref: dir:./infra/crossplane
-    argocd/app-name: skylab-crossplane-infra-dev
+    backstage.io/techdocs-ref: dir:.
+    argocd/app-name: skylab-cluster-2-crossplane-infra-dev
     crossplane.io/composite-resource: skylab-eks-cluster
   tags:
     - kubernetes
