@@ -19,6 +19,6 @@ This EKS cluster is managed by Crossplane and deployed via ArgoCD in the **dev**
 ## Quick Links
 
 - [AWS Console](https://console.aws.amazon.com/eks/home?region=us-east-2#/clusters/skylab)
-- [ArgoCD Applications](https://argocd.skylarhoughtongithub.local/applications?search=skylab)
+- [ArgoCD Applications](https://argocd.skylarhoughtongithub.local/applications?search=skylab-crossplane-infra-dev)
 - [Architecture Details](architecture.md)
 - [Operations Guide](operations.md)
