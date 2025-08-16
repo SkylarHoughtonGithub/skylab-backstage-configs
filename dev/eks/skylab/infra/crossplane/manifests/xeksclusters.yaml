@@ -1,0 +1,36 @@
+---
+apiVersion: infrastructure.skylab.com/v1alpha1
+kind: XEKSCluster
+metadata:
+  name: skylab-cluster
+  namespace: crossplane-system
+  labels:
+    environment: dev
+    cluster-type: eks
+    cluster-name: skylab
+    managed-by: backstage-template
+    template: eks-cluster-crossplane
+  annotations:
+    backstage.io/managed-by-location: url:https://github.com/SkylarHoughtonGithub/skylab-backstage-configs/blob/main/dev/eks/skylab/infra/crossplane/catalog-info.yaml
+    template.backstage.io/created-by: skylab-eks-cluster-template
+spec:
+  # Core cluster configuration
+  clusterName: skylab
+  region: us-east-2
+  environment: dev
+  clusterType: standard
+  kubernetesVersion: "1.28"
+  
+  # Node configuration
+  nodeCount: 1
+  nodeSize: t3.medium
+  
+  # Network configuration - environment-based CIDR allocation
+  vpcCidr: "10.10.0.0/16"
+  subnetCidrs:
+    - "10.10.1.0/24"
+    - "10.10.2.0/24"
+  
+  # Security configuration - environment-specific access
+  allowedCidrs:
+    - "0.0.0.0/0"  # Dev is open for testing
