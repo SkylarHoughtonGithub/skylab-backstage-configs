@@ -34,16 +34,6 @@ spec:
   # Security configuration - environment-specific access
   allowedCidrs:
     - "0.0.0.0/0"  # Dev is open for testing
-
-  debugValues:
-    adminAccessEntryName1: "chicken"
-    adminAccessEntryType1: "user"
-    adminAccessEntryName2: ""
-    adminAccessEntryType2: "role"
-    readOnlyAccessEntryName1: ""
-    readOnlyAccessEntryType1: "role"
-    readOnlyAccessEntryName2: ""
-    readOnlyAccessEntryType2: "role"
   adminPrincipals:
     - name: chicken
       type: user
