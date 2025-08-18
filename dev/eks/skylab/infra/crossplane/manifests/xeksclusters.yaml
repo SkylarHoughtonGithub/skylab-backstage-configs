@@ -35,4 +35,12 @@ spec:
   allowedCidrs:
     - "0.0.0.0/0"  # Dev is open for testing
 
-  # Readonly access entries - simpler conditional approach
+  debugValues:
+    adminAccessEntryName1: ""
+    adminAccessEntryType1: ""
+    adminAccessEntryName2: ""
+    adminAccessEntryType2: ""
+    readOnlyAccessEntryName1: ""
+    readOnlyAccessEntryType1: ""
+    readOnlyAccessEntryName2: ""
+    readOnlyAccessEntryType2: ""
