@@ -11,6 +11,9 @@ on:
       - ready_for_review
       - reopened
       - unlocked
+  check_suite:
+    types:
+      - completed
 
 jobs:
   automerge:
