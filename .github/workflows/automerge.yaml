@@ -1,0 +1,25 @@
+---
+name: Automerge
+on:
+  pull_request:
+    types:
+      - labeled
+      - unlabeled
+      - synchronize
+      - opened
+      - edited
+      - ready_for_review
+      - reopened
+      - unlocked
+
+jobs:
+  automerge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: automerge
+        uses: "pascalgn/merge-action@v0.15.6"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
+          MERGE_LABELS: "backstage-automerge"
+          MERGE_DELETE_BRANCH: "true"
+          MERGE_REMOVE_LABELS: "backstage-automerge"
