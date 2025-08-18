@@ -34,3 +34,5 @@ spec:
   # Security configuration - environment-specific access
   allowedCidrs:
     - "0.0.0.0/0"  # Dev is open for testing
+
+  # Readonly access entries - simpler conditional approach
