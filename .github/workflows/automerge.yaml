@@ -17,8 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: automerge
-        uses: "pascalgn/merge-action@v0.15.6"
+        uses: "pascalgn/merge-action@v0.16.4"
         env:
           GITHUB_TOKEN: "${{ secrets.GH_TOKEN }}"
-          MERGE_DELETE_BRANCH: "true"
-          MERGE_REMOVE_LABELS: "backstage-automerge"
