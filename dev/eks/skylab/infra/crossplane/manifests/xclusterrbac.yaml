@@ -19,4 +19,3 @@ metadata:
 spec:
   clusterName: skylab-dev
   environment: dev
-  includeEbsCsiPolicy: true
