@@ -1,0 +1,53 @@
+
+---
+apiVersion: infrastructure.skylab.com/v1alpha1
+kind: XEKSCluster
+metadata:
+  name: skylab-cluster
+  namespace: crossplane-skylab
+  labels:
+    environment: dev
+    cluster-type: eks
+    cluster-name: skylab
+    managed-by: backstage-template
+    template: eks-cluster-crossplane
+    component: cluster
+  annotations:
+    backstage.io/managed-by-location: url:https://github.com/SkylarHoughtonGithub/skylab-backstage-configs/blob/main/dev/eks/skylab/infra/crossplane/catalog-info.yaml
+    template.backstage.io/created-by: skylab-eks-cluster-template
+spec:
+  clusterName: skylab-dev
+  region: us-east-2
+  environment: dev
+  clusterType: standard
+  kubernetesVersion: "1.33"
+  
+  # References to other compositions
+  networkName: skylab-dev
+  rbacName: skylab-dev
+  
+  # Endpoint access configuration
+  endpointAccess:
+    private: false
+    public: true
+    publicAccessCidrs: ["0.0.0.0/0"]
+  
+  # Node group configuration
+  nodeGroup:
+    desiredSize: 1
+    minSize: 1
+    maxSize: 3
+    instanceTypes: 
+      - t3.medium
+    capacityType: ON_DEMAND
+    amiType: AL2_x86_64
+    diskSize: 20
+  
+  # EKS Add-ons
+  addons:
+    vpcCni:
+      enabled: true
+    coreDns:
+      enabled: true
+    kubeProxy:
+      enabled: true
