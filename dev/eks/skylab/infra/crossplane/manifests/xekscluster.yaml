@@ -46,8 +46,8 @@ spec:
   # EKS Add-ons
   addons:
     vpcCni:
-      enabled: true
+      version: ""
     coreDns:
-      enabled: true
+      version: ""
     kubeProxy:
-      enabled: true
+      version: ""
