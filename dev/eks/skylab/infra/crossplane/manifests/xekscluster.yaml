@@ -42,12 +42,3 @@ spec:
     capacityType: ON_DEMAND
     amiType: AL2_x86_64
     diskSize: 20
-  
-  # EKS Add-ons
-  addons:
-    vpcCni:
-      version: ""
-    coreDns:
-      version: ""
-    kubeProxy:
-      version: ""
