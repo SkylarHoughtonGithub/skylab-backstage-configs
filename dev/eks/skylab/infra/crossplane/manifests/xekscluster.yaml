@@ -22,17 +22,14 @@ spec:
   clusterType: standard
   kubernetesVersion: "1.33"
   
-  # References to other compositions
   networkName: skylab-dev
   rbacName: skylab-dev
   
-  # Endpoint access configuration
   endpointAccess:
     private: false
     public: true
     publicAccessCidrs: ["0.0.0.0/0"]
   
-  # Node group configuration
   nodeGroup:
     desiredSize: 1
     minSize: 1
