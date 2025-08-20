@@ -3,7 +3,7 @@
 apiVersion: infrastructure.skylab.com/v1alpha1
 kind: XEKSAccessEntries
 metadata:
-  name: skylab-access
+  name: skylab-admin-access
   namespace: crossplane-skylab
   labels:
     environment: dev
@@ -11,7 +11,7 @@ metadata:
     cluster-name: skylab
     managed-by: backstage-template
     template: eks-cluster-crossplane
-    component: access
+    component: admin-access
   annotations:
     backstage.io/managed-by-location: url:https://github.com/SkylarHoughtonGithub/skylab-backstage-configs/blob/main/dev/eks/skylab/infra/crossplane/catalog-info.yaml
     template.backstage.io/created-by: skylab-eks-cluster-template
@@ -19,7 +19,8 @@ spec:
   clusterName: skylab-dev
   region: us-east-2
   awsAccountId: "635314249418"
-  adminPrincipals:
-    - name: chicken
-      type: user
-      kubernetesGroups: ["system:masters"]
+  adminPrincipal:
+    name: chicken
+    type: user
+
+# ReadOnly Access Entry Composition (Optional)
