@@ -1,0 +1,44 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: skylab-eks-cluster
+  title: Skylab EKS Cluster
+  description: Standard EKS cluster for dev environment managed by Crossplane
+  annotations:
+    backstage.io/managed-by-location: url:https://github.com/SkylarHoughtonGithub/skylab-backstage-configs/blob/main/dev/eks/standard/skylab/infra/crossplane/catalog-info.yaml
+    backstage.io/techdocs-ref: dir:.
+    argocd/app-name: skylab-cluster-2-crossplane-infra-dev
+    crossplane.io/composite-resource: skylab-eks-cluster
+  tags:
+    - kubernetes
+    - eks
+    - crossplane
+    - infrastructure
+    - dev
+    - eks
+    - standard
+  labels:
+    environment: dev
+    cluster-type: eks
+    cluster-name: skylab
+    layer: infra
+    component: crossplane
+  links:
+    - url: https://console.aws.amazon.com/eks/home?region=us-east-2#/clusters/skylab-dev
+      title: AWS EKS Console
+      icon: cloud
+    - url: https://argocd.skylarhoughtongithub.local/applications?search=skylab-crossplane-infra-dev
+      title: ArgoCD Applications
+      icon: dashboard
+    - url: https://github.com/SkylarHoughtonGithub/skylab-backstage-configs/tree/main/dev/eks/standard/skylab/infra/crossplane
+      title: Source Code
+      icon: github
+spec:
+  type: kubernetes-cluster
+  lifecycle: dev
+  owner: platform-team
+  system: infrastructure
+  dependsOn: []
+  providesApis: []
+  consumesApis: []
