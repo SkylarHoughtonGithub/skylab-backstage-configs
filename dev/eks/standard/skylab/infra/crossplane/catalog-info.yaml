@@ -8,7 +8,7 @@ metadata:
   annotations:
     backstage.io/managed-by-location: url:https://github.com/SkylarHoughtonGithub/skylab-backstage-configs/blob/main/dev/eks/standard/skylab/infra/crossplane/catalog-info.yaml
     backstage.io/techdocs-ref: dir:.
-    argocd/app-name: skylab-cluster-2-crossplane-infra-dev
+    argocd/app-name: skylab-cluster2-crossplane-infra-dev
     crossplane.io/composite-resource: skylab-eks-cluster
   tags:
     - kubernetes
